@@ -12,219 +12,42 @@
   <title>Mr. Boombastic</title>
 
   <style>
-
-    * {
-      box-sizing: border-box;
-    }
-
     html,
     body {
       margin: 0;
-      padding: 0;
-
       width: 100%;
       height: 100%;
-
       overflow: hidden;
-
       background: #000;
     }
 
-
-    /*
-      CENTER THE VIDEO
-    */
-
-    #video-container {
-      position: fixed;
-      inset: 0;
-
+    body {
       display: flex;
       align-items: center;
       justify-content: center;
-
-      background: #000;
     }
 
-
-    /*
-      KEEP THE ORIGINAL 16:9 RATIO
-
-      The entire video remains visible.
-      Nothing gets cropped.
-    */
-
-    #video-wrapper {
-      position: relative;
-
+    .video {
       width: 100vw;
       height: 56.25vw;
 
-      max-width: 177.7778vh;
+      max-width: 177.78vh;
       max-height: 100vh;
-    }
-
-
-    /*
-      YOUTUBE PLAYER
-    */
-
-    #video {
-      position: absolute;
-
-      top: 0;
-      left: 0;
-
-      width: 100%;
-      height: 100%;
 
       border: 0;
     }
-
-
-    /*
-      SOUND BUTTON
-    */
-
-    #sound-button {
-      position: fixed;
-
-      right: 25px;
-      bottom: 25px;
-
-      z-index: 100;
-
-      padding: 12px 18px;
-
-      border: 2px solid #fff;
-      border-radius: 8px;
-
-      background: rgba(0, 0, 0, 0.65);
-
-      color: #fff;
-
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-      font-size: 15px;
-      font-weight: bold;
-
-      cursor: pointer;
-
-      transition:
-        background 0.2s,
-        opacity 0.2s;
-    }
-
-
-    #sound-button:hover {
-      background: rgba(0, 0, 0, 0.9);
-    }
-
   </style>
-
 </head>
-
 
 <body>
 
-
-  <!-- VIDEO -->
-
-  <div id="video-container">
-
-    <div id="video-wrapper">
-
-      <iframe
-        id="video"
-
-        src="https://www.youtube.com/embed/pZ-oEuWMszs?autoplay=1&mute=1&controls=0&loop=1&playlist=pZ-oEuWMszs&playsinline=1&rel=0"
-
-        title="Mr. Boombastic"
-
-        allow="autoplay; encrypted-media; picture-in-picture"
-
-        allowfullscreen
-      ></iframe>
-
-    </div>
-
-  </div>
-
-
-
-  <!-- SOUND BUTTON -->
-
-  <button id="sound-button">
-
-    🔊 SOUND
-
-  </button>
-
-
-
-  <script>
-
-    /*
-      IMPORTANT:
-
-      The simple iframe is deliberately
-      kept because this is the version
-      that successfully autoplays.
-
-      YouTube starts muted because modern
-      browsers normally require muted
-      playback for reliable autoplay.
-
-      Clicking SOUND reloads the player
-      without mute=1.
-
-      Since the click is a user interaction,
-      the browser can then permit audio.
-    */
-
-
-    const soundButton =
-      document.getElementById(
-        'sound-button'
-      );
-
-
-    const video =
-      document.getElementById(
-        'video'
-      );
-
-
-    soundButton.addEventListener(
-      'click',
-      function () {
-
-        /*
-          Replace the URL with the
-          unmuted version.
-
-          autoplay=1 remains enabled.
-        */
-
-        video.src =
-          'https://www.youtube.com/embed/pZ-oEuWMszs?autoplay=1&controls=0&loop=1&playlist=pZ-oEuWMszs&playsinline=1&rel=0';
-
-
-        /*
-          Remove the SOUND button.
-        */
-
-        soundButton.style.display =
-          'none';
-
-      }
-    );
-
-  </script>
-
+  <iframe
+    class="video"
+    src="https://www.youtube.com/embed/pZ-oEuWMszs?controls=0&loop=1&playlist=pZ-oEuWMszs&playsinline=1&rel=0"
+    title="Mr. Boombastic"
+    allow="encrypted-media; fullscreen; picture-in-picture"
+    allowfullscreen>
+  </iframe>
 
 </body>
 

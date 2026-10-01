@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
 
@@ -12,29 +11,16 @@
   <title>Mr. Boombastic</title>
 
   <style>
-
-    * {
-      box-sizing: border-box;
-    }
-
     html,
     body {
+      margin: 0;
       width: 100%;
       height: 100%;
-
-      margin: 0;
-      padding: 0;
-
       overflow: hidden;
-      background: #000;
+      background: black;
     }
 
-
-    /*
-      FULL SCREEN CONTAINER
-    */
-
-    #video-container {
+    .video-container {
       position: fixed;
       inset: 0;
 
@@ -42,375 +28,33 @@
       align-items: center;
       justify-content: center;
 
-      background: #000;
+      background: black;
     }
 
-
-    /*
-      KEEP VIDEO AT 16:9
-
-      This is the sizing that fixed
-      the cropped-edge problem.
-    */
-
-    #video-wrapper {
+    iframe {
       width: 100vw;
       height: 56.25vw;
 
       max-width: 177.7778vh;
       max-height: 100vh;
+
+      border: 0;
     }
-
-
-    #player {
-      width: 100%;
-      height: 100%;
-    }
-
-
-    /*
-      INVISIBLE CLICK LAYER
-
-      The video starts automatically MUTED.
-
-      Clicking anywhere enables sound.
-    */
-
-    #sound-layer {
-      position: fixed;
-      inset: 0;
-
-      z-index: 100;
-
-      cursor: pointer;
-
-      background: transparent;
-    }
-
-
-    /*
-      Small sound hint.
-
-      This disappears after the
-      visitor enables sound.
-    */
-
-    #sound-hint {
-      position: fixed;
-
-      left: 50%;
-      bottom: 30px;
-
-      transform: translateX(-50%);
-
-      z-index: 101;
-
-      padding: 12px 20px;
-
-      border-radius: 8px;
-
-      background: rgba(0, 0, 0, 0.65);
-
-      color: white;
-
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-      font-size: 16px;
-
-      pointer-events: none;
-
-      opacity: 0;
-
-      transition: opacity 0.5s;
-    }
-
-
-    #sound-hint.visible {
-      opacity: 1;
-    }
-
   </style>
 </head>
 
-
 <body>
 
+  <div class="video-container">
 
-  <!-- VIDEO -->
-
-  <div id="video-container">
-
-    <div id="video-wrapper">
-
-      <div id="player"></div>
-
-    </div>
+    <iframe
+      src="https://www.youtube.com/embed/pZ-oEuWMszs?autoplay=1&mute=1&playsinline=1"
+      title="Mr. Boombastic"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen>
+    </iframe>
 
   </div>
-
-
-
-  <!--
-    INVISIBLE CLICK AREA
-
-    No ENTER THE FARM screen.
-  -->
-
-  <div id="sound-layer"></div>
-
-
-
-  <!-- SOUND MESSAGE -->
-
-  <div id="sound-hint">
-
-    🔊 Click anywhere for sound
-
-  </div>
-
-
-
-  <!-- YOUTUBE API -->
-
-  <script src="https://www.youtube.com/iframe_api"></script>
-
-
-  <script>
-
-    let player;
-
-    const soundLayer =
-      document.getElementById(
-        'sound-layer'
-      );
-
-    const soundHint =
-      document.getElementById(
-        'sound-hint'
-      );
-
-
-
-    /*
-      CREATE YOUTUBE PLAYER
-    */
-
-    function onYouTubeIframeAPIReady() {
-
-      player = new YT.Player(
-        'player',
-        {
-
-          videoId:
-            'pZ-oEuWMszs',
-
-
-          playerVars: {
-
-            /*
-              TRUE AUTOPLAY
-            */
-
-            autoplay: 1,
-
-
-            /*
-              Start MUTED.
-
-              This is what allows
-              modern browsers to
-              autoplay reliably.
-            */
-
-            mute: 1,
-
-
-            /*
-              Hide controls
-            */
-
-            controls: 0,
-
-
-            /*
-              Loop continuously
-            */
-
-            loop: 1,
-
-            playlist:
-              'pZ-oEuWMszs',
-
-
-            /*
-              Mobile playback
-            */
-
-            playsinline: 1,
-
-
-            /*
-              Disable keyboard
-            */
-
-            disablekb: 1,
-
-
-            /*
-              Hide fullscreen button
-            */
-
-            fs: 0,
-
-
-            /*
-              Limit related videos
-            */
-
-            rel: 0,
-
-
-            /*
-              Player language
-            */
-
-            hl: 'en'
-
-          },
-
-
-          events: {
-
-            onReady:
-              onPlayerReady,
-
-            onStateChange:
-              onPlayerStateChange
-
-          }
-
-        }
-      );
-
-    }
-
-
-
-    /*
-      PLAYER READY
-    */
-
-    function onPlayerReady() {
-
-      /*
-        Explicitly mute before
-        requesting playback.
-      */
-
-      player.mute();
-
-      player.setVolume(100);
-
-
-      /*
-        Start immediately.
-      */
-
-      player.playVideo();
-
-
-      /*
-        Show sound hint shortly
-        after playback begins.
-      */
-
-      setTimeout(
-        function () {
-
-          soundHint
-            .classList
-            .add('visible');
-
-        },
-        1200
-      );
-
-    }
-
-
-
-    /*
-      PLAYER STATE
-    */
-
-    function onPlayerStateChange(event) {
-
-      /*
-        If YouTube pauses/stops
-        unexpectedly, attempt
-        playback again.
-      */
-
-      if (
-        event.data ===
-        YT.PlayerState.CUED
-      ) {
-
-        player.playVideo();
-
-      }
-
-    }
-
-
-
-    /*
-      ENABLE SOUND
-
-      Clicking anywhere counts as
-      user interaction.
-
-      Browsers then permit us to
-      unmute the YouTube player.
-    */
-
-    soundLayer.addEventListener(
-      'click',
-      function () {
-
-        player.unMute();
-
-        player.setVolume(100);
-
-        player.playVideo();
-
-
-        /*
-          Remove click layer so
-          normal player interaction
-          is possible afterwards.
-        */
-
-        soundLayer.style.display =
-          'none';
-
-
-        /*
-          Remove sound hint.
-        */
-
-        soundHint.style.display =
-          'none';
-
-      }
-    );
-
-  </script>
-
 
 </body>
-
 </html>

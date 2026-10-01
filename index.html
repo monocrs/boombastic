@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>Mr. Boombastic</title>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -16,16 +21,22 @@
     body {
       width: 100%;
       height: 100%;
+
       margin: 0;
       padding: 0;
+
       overflow: hidden;
-      background: black;
+      background: #000;
     }
 
+
     /*
-      This container fills the screen and centers
-      the video without cropping it.
+      FULLSCREEN CONTAINER
+
+      Centers the video and keeps the entire
+      16:9 image visible without cropping.
     */
+
     #video-container {
       position: fixed;
       inset: 0;
@@ -34,19 +45,19 @@
       align-items: center;
       justify-content: center;
 
-      background: black;
+      background: #000;
     }
+
 
     /*
-      Maintain the video's native 16:9 ratio.
+      Maintain the original 16:9 aspect ratio.
 
-      The JavaScript below calculates whether width
-      or height is the limiting dimension.
+      This means:
+      - no cropped edges
+      - no stretched video
+      - black bars may appear when the
+        browser isn't 16:9
     */
-    #player {
-      width: 100%;
-      height: 100%;
-    }
 
     #video-wrapper {
       width: 100vw;
@@ -56,64 +67,104 @@
       max-height: 100vh;
     }
 
+
+    #player {
+      width: 100%;
+      height: 100%;
+    }
+
+
     /*
-      Only appears when the browser refuses
-      autoplay with audio.
+      AUTOPLAY FALLBACK
+
+      This only appears if the browser blocks
+      autoplay with sound.
     */
+
     #start-screen {
       position: fixed;
       inset: 0;
 
       display: none;
+
       align-items: center;
       justify-content: center;
 
       z-index: 100;
 
       background: rgba(0, 0, 0, 0.35);
+
       cursor: pointer;
     }
+
 
     #start-button {
       padding: 20px 35px;
 
-      border: 3px solid white;
+      border: 3px solid #fff;
       border-radius: 12px;
 
       background: rgba(0, 0, 0, 0.65);
 
-      color: white;
+      color: #fff;
 
-      font-family: Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
       font-size: clamp(24px, 4vw, 52px);
       font-weight: bold;
+
+      cursor: pointer;
+      user-select: none;
     }
+
   </style>
 </head>
 
 
 <body>
 
+
+  <!-- VIDEO -->
+
   <div id="video-container">
+
     <div id="video-wrapper">
+
       <div id="player"></div>
+
     </div>
+
   </div>
 
+
+
+  <!-- AUTOPLAY FALLBACK -->
 
   <div id="start-screen">
+
     <div id="start-button">
+
       ▶ ENTER THE FARM
+
     </div>
+
   </div>
 
 
+
+  <!-- YOUTUBE IFRAME API -->
+
   <script src="https://www.youtube.com/iframe_api"></script>
+
 
   <script>
 
     let player;
 
+
+
+    /*
+      YouTube API initialization
+    */
 
     function onYouTubeIframeAPIReady() {
 
@@ -121,30 +172,83 @@
 
         videoId: 'pZ-oEuWMszs',
 
+
         playerVars: {
 
-          /* Attempt autoplay */
+          /*
+            Attempt autoplay
+          */
+
           autoplay: 1,
 
-          /* No YouTube controls */
+
+          /*
+            Hide YouTube controls
+          */
+
           controls: 0,
 
-          /* Loop */
+
+          /*
+            Loop this video continuously
+          */
+
           loop: 1,
+
           playlist: 'pZ-oEuWMszs',
 
-          /* Mobile inline playback */
+
+          /*
+            Allow inline playback on phones
+          */
+
           playsinline: 1,
 
-          /* Keyboard controls off */
+
+          /*
+            Disable keyboard controls
+          */
+
           disablekb: 1,
 
-          /* Fullscreen button off */
+
+          /*
+            Hide YouTube fullscreen button
+          */
+
           fs: 0,
 
-          /* Related videos limited */
-          rel: 0
+
+          /*
+            Limit related videos
+          */
+
+          rel: 0,
+
+
+          /*
+            Do NOT force captions on.
+
+            NOTE:
+            YouTube does not provide a guaranteed
+            parameter for forcing a viewer's
+            captions OFF.
+
+            We therefore don't load or manipulate
+            the captions module.
+          */
+
+          cc_load_policy: 0,
+
+
+          /*
+            Player language
+          */
+
+          hl: 'en'
+
         },
+
 
         events: {
 
@@ -152,9 +256,8 @@
 
           onStateChange: onPlayerStateChange,
 
-          onAutoplayBlocked: onAutoplayBlocked,
+          onAutoplayBlocked: onAutoplayBlocked
 
-          onApiChange: onApiChange
         }
 
       });
@@ -162,128 +265,56 @@
     }
 
 
-    function onPlayerReady() {
 
-      /*
-        Try playback WITH SOUND.
-      */
+    /*
+      PLAYER READY
+
+      Attempt playback WITH SOUND.
+    */
+
+    function onPlayerReady(event) {
 
       player.setVolume(100);
+
       player.unMute();
+
       player.playVideo();
 
-
-      /*
-        Ask YouTube to load its captions module.
-
-        Once available, onApiChange() will attempt
-        to disable the active caption track.
-      */
-
-      try {
-        player.loadModule('captions');
-      } catch (e) {
-        console.log('Caption module unavailable');
-      }
-
     }
+
 
 
     /*
-      YouTube tells us when modules become available.
+      PLAYBACK STARTED
     */
-
-    function onApiChange() {
-
-      try {
-
-        const modules = player.getOptions();
-
-        if (
-          modules.includes('captions') ||
-          modules.includes('cc')
-        ) {
-
-          const module =
-            modules.includes('captions')
-              ? 'captions'
-              : 'cc';
-
-          /*
-            Empty language code = attempt to select
-            no caption track.
-          */
-
-          player.setOption(
-            module,
-            'track',
-            {
-              languageCode: ''
-            }
-          );
-
-        }
-
-      } catch (e) {
-
-        console.log(
-          'Could not override caption preference.'
-        );
-
-      }
-
-    }
-
 
     function onPlayerStateChange(event) {
 
       if (event.data === YT.PlayerState.PLAYING) {
 
+        /*
+          Hide fallback screen if playback
+          successfully starts.
+        */
+
         document.getElementById(
           'start-screen'
         ).style.display = 'none';
 
-
-        /*
-          Try disabling captions again after
-          playback actually begins.
-        */
-
-        disableCaptions();
-
       }
 
     }
 
 
-    function disableCaptions() {
 
-      try {
+    /*
+      AUTOPLAY BLOCKED
 
-        const modules = player.getOptions();
+      Modern browsers commonly prevent
+      autoplay when audio is enabled.
 
-        const module =
-          modules.includes('captions')
-            ? 'captions'
-            : 'cc';
-
-        player.setOption(
-          module,
-          'track',
-          {
-            languageCode: ''
-          }
-        );
-
-      } catch (e) {
-
-        // YouTube may ignore this depending
-        // on viewer preferences.
-
-      }
-
-    }
-
+      If that happens, show the button.
+    */
 
     function onAutoplayBlocked() {
 
@@ -294,14 +325,25 @@
     }
 
 
+
+    /*
+      FALLBACK CLICK
+
+      A user click gives the browser the
+      interaction required to start playback
+      with sound.
+    */
+
     document.getElementById(
       'start-screen'
     ).addEventListener(
       'click',
       function () {
 
-        player.unMute();
         player.setVolume(100);
+
+        player.unMute();
+
         player.playVideo();
 
         this.style.display = 'none';
@@ -311,5 +353,7 @@
 
   </script>
 
+
 </body>
+
 </html>

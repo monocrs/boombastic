@@ -31,9 +31,7 @@
 
 
     /*
-      FULLSCREEN VIDEO CONTAINER
-
-      Centers the video on the screen.
+      FULL SCREEN CONTAINER
     */
 
     #video-container {
@@ -49,17 +47,10 @@
 
 
     /*
-      VIDEO WRAPPER
+      KEEP VIDEO AT 16:9
 
-      Keeps the original 16:9 aspect ratio.
-
-      This prevents:
-      - cropping
-      - stretching
-      - cutting off the edges
-
-      If the browser isn't exactly 16:9,
-      black bars may appear.
+      This is the sizing that fixed
+      the cropped-edge problem.
     */
 
     #video-wrapper {
@@ -71,10 +62,6 @@
     }
 
 
-    /*
-      YouTube player fills the wrapper.
-    */
-
     #player {
       width: 100%;
       height: 100%;
@@ -82,56 +69,67 @@
 
 
     /*
-      AUTOPLAY FALLBACK
+      INVISIBLE CLICK LAYER
 
-      Only displayed if the browser blocks
-      autoplay with sound.
+      The video starts automatically MUTED.
+
+      Clicking anywhere enables sound.
     */
 
-    #start-screen {
+    #sound-layer {
       position: fixed;
       inset: 0;
 
-      display: none;
-
-      align-items: center;
-      justify-content: center;
-
       z-index: 100;
 
-      background: rgba(0, 0, 0, 0.35);
-
       cursor: pointer;
+
+      background: transparent;
     }
 
 
     /*
-      ENTER THE FARM button
+      Small sound hint.
+
+      This disappears after the
+      visitor enables sound.
     */
 
-    #start-button {
-      padding: 20px 35px;
+    #sound-hint {
+      position: fixed;
 
-      border: 3px solid #fff;
-      border-radius: 12px;
+      left: 50%;
+      bottom: 30px;
+
+      transform: translateX(-50%);
+
+      z-index: 101;
+
+      padding: 12px 20px;
+
+      border-radius: 8px;
 
       background: rgba(0, 0, 0, 0.65);
 
-      color: #fff;
+      color: white;
 
-      font-family: Arial, Helvetica, sans-serif;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
-      font-size: clamp(
-        24px,
-        4vw,
-        52px
-      );
+      font-size: 16px;
 
-      font-weight: bold;
+      pointer-events: none;
 
-      cursor: pointer;
+      opacity: 0;
 
-      user-select: none;
+      transition: opacity 0.5s;
+    }
+
+
+    #sound-hint.visible {
+      opacity: 1;
     }
 
   </style>
@@ -141,9 +139,7 @@
 <body>
 
 
-  <!--
-    VIDEO
-  -->
+  <!-- VIDEO -->
 
   <div id="video-container">
 
@@ -158,27 +154,26 @@
 
 
   <!--
-    AUTOPLAY FALLBACK
+    INVISIBLE CLICK AREA
 
-    This appears only if autoplay with
-    sound is rejected by the browser.
+    No ENTER THE FARM screen.
   -->
 
-  <div id="start-screen">
+  <div id="sound-layer"></div>
 
-    <div id="start-button">
 
-      ▶ ENTER THE FARM
 
-    </div>
+  <!-- SOUND MESSAGE -->
+
+  <div id="sound-hint">
+
+    🔊 Click anywhere for sound
 
   </div>
 
 
 
-  <!--
-    YOUTUBE IFRAME PLAYER API
-  -->
+  <!-- YOUTUBE API -->
 
   <script src="https://www.youtube.com/iframe_api"></script>
 
@@ -187,11 +182,20 @@
 
     let player;
 
+    const soundLayer =
+      document.getElementById(
+        'sound-layer'
+      );
+
+    const soundHint =
+      document.getElementById(
+        'sound-hint'
+      );
+
 
 
     /*
-      YouTube calls this automatically
-      after the IFrame API loads.
+      CREATE YOUTUBE PLAYER
     */
 
     function onYouTubeIframeAPIReady() {
@@ -200,81 +204,77 @@
         'player',
         {
 
-          videoId: 'pZ-oEuWMszs',
+          videoId:
+            'pZ-oEuWMszs',
 
 
           playerVars: {
 
             /*
-              Attempt automatic playback.
+              TRUE AUTOPLAY
             */
 
             autoplay: 1,
 
 
             /*
-              Hide normal player controls.
+              Start MUTED.
+
+              This is what allows
+              modern browsers to
+              autoplay reliably.
+            */
+
+            mute: 1,
+
+
+            /*
+              Hide controls
             */
 
             controls: 0,
 
 
             /*
-              Loop the video.
+              Loop continuously
             */
 
             loop: 1,
 
-            playlist: 'pZ-oEuWMszs',
+            playlist:
+              'pZ-oEuWMszs',
 
 
             /*
-              Allow inline playback on
-              mobile devices.
+              Mobile playback
             */
 
             playsinline: 1,
 
 
             /*
-              Disable YouTube keyboard
-              controls.
+              Disable keyboard
             */
 
             disablekb: 1,
 
 
             /*
-              Hide YouTube's fullscreen
-              button.
+              Hide fullscreen button
             */
 
             fs: 0,
 
 
             /*
-              Related videos are limited
-              to the same channel.
+              Limit related videos
             */
 
             rel: 0,
 
 
             /*
-              Player interface language.
-
-              IMPORTANT:
-
-              There is intentionally NO
-              cc_load_policy here.
-
-              We are NOT asking YouTube
-              to load captions.
-
-              YouTube may still display
-              captions if the viewer has
-              captions enabled in their
-              YouTube/browser preferences.
+              Player language
             */
 
             hl: 'en'
@@ -284,28 +284,11 @@
 
           events: {
 
-            /*
-              Player has loaded.
-            */
-
-            onReady: onPlayerReady,
-
-
-            /*
-              Playback state changed.
-            */
+            onReady:
+              onPlayerReady,
 
             onStateChange:
-              onPlayerStateChange,
-
-
-            /*
-              YouTube specifically reports
-              that autoplay was rejected.
-            */
-
-            onAutoplayBlocked:
-              onAutoplayBlocked
+              onPlayerStateChange
 
           }
 
@@ -318,62 +301,65 @@
 
     /*
       PLAYER READY
-
-      Attempt to start immediately
-      WITH SOUND.
     */
 
-    function onPlayerReady(event) {
+    function onPlayerReady() {
 
       /*
-        Maximum volume.
+        Explicitly mute before
+        requesting playback.
       */
+
+      player.mute();
 
       player.setVolume(100);
 
 
       /*
-        Make sure player isn't muted.
-      */
-
-      player.unMute();
-
-
-      /*
-        Request playback.
+        Start immediately.
       */
 
       player.playVideo();
+
+
+      /*
+        Show sound hint shortly
+        after playback begins.
+      */
+
+      setTimeout(
+        function () {
+
+          soundHint
+            .classList
+            .add('visible');
+
+        },
+        1200
+      );
 
     }
 
 
 
     /*
-      PLAYER STATE CHANGED
+      PLAYER STATE
     */
 
     function onPlayerStateChange(event) {
 
       /*
-        Playback successfully started.
+        If YouTube pauses/stops
+        unexpectedly, attempt
+        playback again.
       */
 
       if (
         event.data ===
-        YT.PlayerState.PLAYING
+        YT.PlayerState.CUED
       ) {
 
-        /*
-          Hide the fallback overlay.
-        */
-
-        document
-          .getElementById(
-            'start-screen'
-          )
-          .style
-          .display = 'none';
+        player.playVideo();
 
       }
 
@@ -382,70 +368,45 @@
 
 
     /*
-      AUTOPLAY BLOCKED
+      ENABLE SOUND
 
-      Browsers may reject automatic
-      playback when sound is enabled.
-
-      YouTube reports that through the
-      onAutoplayBlocked event.
-    */
-
-    function onAutoplayBlocked() {
-
-      document
-        .getElementById(
-          'start-screen'
-        )
-        .style
-        .display = 'flex';
-
-    }
-
-
-
-    /*
-      FALLBACK CLICK
-
-      Clicking the overlay counts as
+      Clicking anywhere counts as
       user interaction.
 
-      We can therefore request playback
-      with audio again.
+      Browsers then permit us to
+      unmute the YouTube player.
     */
 
-    document
-      .getElementById(
-        'start-screen'
-      )
-      .addEventListener(
-        'click',
-        function () {
+    soundLayer.addEventListener(
+      'click',
+      function () {
 
-          /*
-            Make sure audio is enabled.
-          */
+        player.unMute();
 
-          player.setVolume(100);
+        player.setVolume(100);
 
-          player.unMute();
+        player.playVideo();
 
 
-          /*
-            Start video.
-          */
+        /*
+          Remove click layer so
+          normal player interaction
+          is possible afterwards.
+        */
 
-          player.playVideo();
+        soundLayer.style.display =
+          'none';
 
 
-          /*
-            Remove overlay.
-          */
+        /*
+          Remove sound hint.
+        */
 
-          this.style.display = 'none';
+        soundHint.style.display =
+          'none';
 
-        }
-      );
+      }
+    );
 
   </script>
 
